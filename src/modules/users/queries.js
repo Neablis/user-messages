@@ -2,7 +2,7 @@
 const {GraphQLList, GraphQLString} = require('graphql');
 
 // Resolvers
-const {getUser, getUsers, getLogin} = require('./resolvers');
+const {getUser, getUsers, getLogin, searchUsers} = require('./resolvers');
 
 // Modules
 const {UserType} = require('./types');
@@ -38,9 +38,25 @@ const login = {
   resolve: getLogin,
 };
 
+const search = {
+  type: UserType,
+  args: {
+    email: {
+      name: 'email',
+      type: GraphQLString,
+    },
+    phoneNumber: {
+      name: 'phone number',
+      type: GraphQLString,
+    },
+  },
+  resolve: searchUsers,
+};
+
 
 module.exports = {
   user,
   users,
   login,
+  search,
 };

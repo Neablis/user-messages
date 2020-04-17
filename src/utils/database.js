@@ -5,7 +5,7 @@ const {Sequelize} = require('sequelize');
 const connection = new Sequelize(
   process.env.DATABASE_URL,
   {
-    logging: false,
+    logging: true,
     operatorsAliases: Sequelize.Op,
     pool: {
       max: 20,

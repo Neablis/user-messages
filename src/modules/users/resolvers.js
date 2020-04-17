@@ -103,7 +103,7 @@ const getUser = async (
 
 const getUsers = async (
   parentValue,
-  {},
+  {limit, offset},
   {},
 ) => {
   const users = await models.User.findAll();
@@ -111,9 +111,42 @@ const getUsers = async (
   return users;
 };
 
+const searchUsers = async (
+  parentValue,
+  {email, phoneNumber},
+  {session},
+) => {
+  const userId = session.userId;
+
+  if (!userId) {
+    throw new Error('User must be logged in');
+  }
+
+  const userModels = await models.User.findAll({
+    limit: 10,
+    where: {
+      [models.Sequelize.Op.or]: [
+        {
+          email: {
+            [models.Sequelize.Op.iLike]: `%${email}%`,
+          },
+        },
+        {
+          phoneNumber: {
+            [models.Sequelize.Op.iLike]: `%${phoneNumber}%`,
+          },
+        },
+      ],
+    },
+  });
+
+  return userModels;
+};
+
 module.exports = {
   getLogin,
   getUser,
   getUsers,
+  searchUsers,
   createUser,
 };

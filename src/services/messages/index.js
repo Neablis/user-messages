@@ -1,7 +1,7 @@
 const models = require('../../utils/models');
 
 /**
- * Job Processor abstract class for creating a new job
+ * Class for User Messages
  */
 class Messages {
   /**
@@ -24,6 +24,23 @@ class Messages {
     const messages = models.Message.findAll({
       where: {
         userId: this.userId,
+      },
+      order: [['createdAt', 'DESC']],
+    });
+
+    return messages;
+  }
+
+  /**
+   * Gets follow users messages
+   * @return {Promise<any>}
+   */
+  async getFollowsMessages(ids=[]) {
+    const messages = models.Message.findAll({
+      where: {
+        userId: {
+          [models.Sequelize.Op.in]: ids,
+        },
       },
       order: [['createdAt', 'DESC']],
     });
