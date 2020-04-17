@@ -5,6 +5,7 @@ const databaseConnection = require('./database');
 
 const models = {
   User: databaseConnection.import('../modules/users/model'),
+  Message: databaseConnection.import('../modules/messages/model'),
 };
 
 // A generic function that takes in a model and props, which allows
