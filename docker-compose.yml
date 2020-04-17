@@ -1,0 +1,34 @@
+# docker-compose.yml
+version: '3.7'
+
+services:
+  cache:
+    image: redis
+    container_name: user-cache
+    expose:
+      - 6379
+
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=db
+
+  app:
+    build: ./
+    links:
+      - cache
+      - db
+    volumes:
+      - ./:/var/www/app
+    ports:
+      - 3000:3000
+    environment:
+      - REDIS_URL=redis://user-cache
+      - DATABASE_URL=postgres://postgres:password@db:5432/db
+      - NODE_ENV=development
+      - PORT=3000
+      - SECRET=fakesecret
+    command:
+      sh -c 'npm i && npm run-script watch'
