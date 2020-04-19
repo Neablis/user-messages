@@ -39,7 +39,7 @@ $ docker-compose run --rm app npm run-script migrate
       * Model.js
       * Mutations.js
       * Queries.js
-      * Resolvers]
+      * Resolvers.js
   * Services/
     * Users/
       * index.js
