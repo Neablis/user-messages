@@ -43,6 +43,12 @@ describe('Messages', () => {
     }
   `;
 
+  const DELETE_MESSAGE = `
+    mutation deleteMessage($id: Int) {
+      deleteMessage(id: $id)
+    }
+  `;
+
   const userLogin = {
     email: 'test@dharma.io',
     password: '12345',
@@ -108,6 +114,28 @@ describe('Messages', () => {
         } = results;
 
         expect(message.message).to.eql('Hello');
+      });
+
+      it('delete a message', async () => {
+        let results = await query(CREATE_MESSAGE, {
+          variables: {
+            message: 'Hello',
+          },
+        });
+
+        const {
+          data: {
+            message,
+          },
+        } = results;
+
+        const deletedMessage = await query(DELETE_MESSAGE, {
+          variables: {
+            id: message.id,
+          },
+        });
+
+        expect(deletedMessage.data.deleteMessage);
       });
 
       it('updates a message', async () => {

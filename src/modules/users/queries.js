@@ -1,5 +1,5 @@
 // Packages
-const {GraphQLList, GraphQLString} = require('graphql');
+const {GraphQLList, GraphQLString, GraphQLInt} = require('graphql');
 
 // Resolvers
 const {getUser, getUsers, getLogin, searchUsers} = require('./resolvers');
@@ -15,7 +15,16 @@ const user = {
 
 const users = {
   type: GraphQLList(UserType),
-  args: {},
+  args: {
+    limit: {
+      name: 'limit',
+      type: GraphQLInt,
+    },
+    offset: {
+      name: 'offset',
+      type: GraphQLInt,
+    },
+  },
   resolve: getUsers,
 };
 

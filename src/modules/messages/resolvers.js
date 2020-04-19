@@ -41,7 +41,28 @@ const createMessage = async (
   }
 };
 
+const deleteMessageResolver = async (
+  parentValue,
+  {id},
+  {session},
+) => {
+  const userId = session.userId;
+
+  if (!userId) {
+    throw new Error('Must be logged in to create a message');
+  }
+
+  if (!id) {
+    throw new Error('Must pass an id of a message to delete');
+  }
+
+  const userMessages = new Messages(userId);
+
+  return userMessages.deleteMessage(id);
+};
+
 module.exports = {
   getMessages,
   createMessage,
+  deleteMessageResolver,
 };

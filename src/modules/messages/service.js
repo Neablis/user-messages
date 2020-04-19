@@ -62,6 +62,19 @@ class Messages {
   }
 
   /**
+   * Deletes a message for a user
+   * @param {integer} messageId
+   * @return {Promise<*>}
+   */
+  async deleteMessage(messageId) {
+    return models.Message.destroy({
+      where: {
+        id: messageId,
+      },
+    });
+  }
+
+  /**
    * Updates a message with a new message
    * @param {string} message
    * @param {integer} messageId

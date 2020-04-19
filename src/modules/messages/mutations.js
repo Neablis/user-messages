@@ -2,10 +2,11 @@
 const {
   GraphQLString,
   GraphQLInt,
+  GraphQLBoolean,
 } = require('graphql');
 
 // Modules
-const {createMessage} = require('./resolvers');
+const {createMessage, deleteMessageResolver} = require('./resolvers');
 const {MessageType} = require('./types');
 
 const message = {
@@ -23,6 +24,18 @@ const message = {
   resolve: createMessage,
 };
 
+const deleteMessage = {
+  type: GraphQLBoolean,
+  args: {
+    id: {
+      name: 'id',
+      type: GraphQLInt,
+    },
+  },
+  resolve: deleteMessageResolver,
+};
+
 module.exports = {
   message,
+  deleteMessage,
 };
