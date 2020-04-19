@@ -21,19 +21,18 @@ class Messages {
    * @return {Promise<any>}
    */
   async getMessages() {
-    const messages = models.Message.findAll({
+    return models.Message.findAll({
       where: {
         userId: this.userId,
       },
       order: [['createdAt', 'DESC']],
     });
-
-    return messages;
   }
 
   /**
-   * Gets follow users messages
-   * @return {Promise<any>}
+   * gets messages for followed users
+   * @param (string|Array.) ids
+   * @returns {Promise<<Model[]>>}
    */
   async getFollowsMessages(ids=[]) {
     const messages = models.Message.findAll({
@@ -70,8 +69,10 @@ class Messages {
    */
   async updateMessage(message, messageId) {
     const messageModel = await models.Message.findOne({
-      userId: this.userId,
-      id: messageId,
+      where: {
+        userId: this.userId,
+        id: messageId,
+      },
     });
 
     if (!messageModel) {

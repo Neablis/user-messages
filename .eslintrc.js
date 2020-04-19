@@ -16,6 +16,7 @@ module.exports = {
   },
   'rules': {
     'new-cap': 0,
-    'indent': ["error", 2]
+    'indent': ["error", 2],
+    'valid-jsdoc': 1,
   },
 };

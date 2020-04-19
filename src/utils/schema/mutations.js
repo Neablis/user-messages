@@ -13,7 +13,7 @@ const mutation = new GraphQLObjectType({
   fields: {
     ...users,
     ...messages,
-    ...follows
+    ...follows,
   },
 });
 

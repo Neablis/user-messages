@@ -18,7 +18,7 @@ const message = {
     id: {
       name: 'id',
       type: GraphQLInt,
-    }
+    },
   },
   resolve: createMessage,
 };

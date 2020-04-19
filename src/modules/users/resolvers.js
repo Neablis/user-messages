@@ -1,14 +1,16 @@
 // Packages
-const bcrypt = require('bcrypt');
+const Users = require('./service');
 
 // Modules
 // const redis = require('../../utils/redis');
 const models = require('../../utils/models');
 
-const getUserLogin = (user, session) => {
-  session.userId = user.id;
+const getUserLogin = async (user, session) => {
+  const model = await user.get();
 
-  return user;
+  session.userId = model.id;
+
+  return model;
 };
 
 const getLogin = async (
@@ -16,34 +18,9 @@ const getLogin = async (
   {email=null, phoneNumber=null, password},
   {session},
 ) => {
-  const lowerCaseEmail = email && email.toLowerCase();
+  const user = await Users.login(email, phoneNumber, password);
 
-  const user = await models.User.findOne({
-    where: {
-      email: lowerCaseEmail,
-      phoneNumber,
-    },
-  });
-
-  if (!user) {
-    // User does not exists, throw error for missing password
-    throw new Error('Incorrect Password');
-  }
-
-  const userDetails = user.get();
-
-  // User exists
-  const passwordMatch = await bcrypt.compare(
-    password,
-    userDetails.password,
-  );
-
-  if (!passwordMatch) {
-    // Incorrect password
-    throw new Error('Incorrect Password');
-  }
-
-  return await getUserLogin(user, session);
+  return getUserLogin(user, session);
 };
 
 const createUser = async (
@@ -51,34 +28,9 @@ const createUser = async (
   {email=null, phoneNumber=null, password},
   {session},
 ) => {
-  const lowerCaseEmail = email && email.toLowerCase();
+  const user = await Users.create(email, phoneNumber, password);
 
-  const existingUser = await models.User.findOne({
-    where: {
-      email: lowerCaseEmail,
-      phoneNumber,
-    },
-  });
-
-  if (existingUser) {
-    throw new Error('User already exists with that email');
-  }
-
-  if (!password || password.length < 5) {
-    throw new Error('Your password must be longer than 4 characters.');
-  }
-
-  // Hash the password
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  // Create the user
-  const user = await models.User.create({
-    email: lowerCaseEmail,
-    phoneNumber,
-    password: hashedPassword,
-  });
-
-  return await getUserLogin(user, session);
+  return getUserLogin(user, session);
 };
 
 const getUser = async (
@@ -92,13 +44,9 @@ const getUser = async (
     throw new Error('Must be logged in to get user');
   }
 
-  const user = await models.User.findByPk(userId);
+  const user = new Users(userId);
 
-  if (!user) {
-    throw new Error('User could not be found');
-  }
-
-  return user;
+  return user.get();
 };
 
 const getUsers = async (
@@ -106,9 +54,7 @@ const getUsers = async (
   {limit, offset},
   {},
 ) => {
-  const users = await models.User.findAll();
-
-  return users;
+  return Users.getUsers(limit, offset);
 };
 
 const searchUsers = async (
@@ -122,25 +68,9 @@ const searchUsers = async (
     throw new Error('User must be logged in');
   }
 
-  const userModels = await models.User.findAll({
-    limit: 10,
-    where: {
-      [models.Sequelize.Op.or]: [
-        {
-          email: {
-            [models.Sequelize.Op.iLike]: `%${email}%`,
-          },
-        },
-        {
-          phoneNumber: {
-            [models.Sequelize.Op.iLike]: `%${phoneNumber}%`,
-          },
-        },
-      ],
-    },
-  });
+  const user = new Users(userId);
 
-  return userModels;
+  return user.searchUsers(email, phoneNumber);
 };
 
 module.exports = {

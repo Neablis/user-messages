@@ -39,7 +39,7 @@ const login = {
 };
 
 const search = {
-  type: UserType,
+  type: GraphQLList(UserType),
   args: {
     email: {
       name: 'email',

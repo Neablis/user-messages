@@ -1,7 +1,7 @@
 // Packages
 const {
   GraphQLBoolean,
-  GraphQLInt
+  GraphQLInt,
 } = require('graphql');
 
 // Modules
@@ -13,7 +13,7 @@ const follow = {
     userId: {
       name: 'user id',
       type: GraphQLInt,
-    }
+    },
   },
   resolve: createFollow,
 };
@@ -24,12 +24,12 @@ const unfollow = {
     userId: {
       name: 'user id',
       type: GraphQLInt,
-    }
+    },
   },
   resolve: removeFollow,
 };
 
 module.exports = {
   follow,
-  unfollow
+  unfollow,
 };

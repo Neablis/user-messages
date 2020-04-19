@@ -6,52 +6,76 @@ const chai = require('../setup/chai');
 const expect = chai.expect;
 
 const schema = require('../../src/utils/schema');
+const truncate = require('../setup/truncate');
 
-describe('JobProcessor', () => {
+describe('User', () => {
   let query = null;
   let mutate = null;
   let client = null;
 
-  const JOB = `
-    query job($id: Int!) {
-      job(id: $id) {
+  const USER = `
+    query user {
+      user {
         id
-        progress
-        result
-        status
+        email
+        phoneNumber
       }
     }
   `;
 
-  const JOBS = `
-    query jobs {
-      jobs {
+  const LOGIN = `
+    query login($email: String, $phoneNumber: String, $password: String!) {
+      login(email: $email, phoneNumber: $phoneNumber, password: $password) {
         id
-        progress
-        result
-        status
+        email
+        phoneNumber
       }
     }
   `;
 
-  const CREATE_JOB = `
-    mutation job($url: String!) {
-      job(url: $url) {
+  const USERS = `
+    query users {
+      users {
         id
-        progress
-        result
-        status
+        email
+        phoneNumber
       }
     }
   `;
 
-  beforeEach(async () => {
+  const SEARCH = `
+    query search($email: String, $phoneNumber: String) {
+      search(email: $email, phoneNumber: $phoneNumber) {
+        id
+        email
+        phoneNumber
+      }
+    }
+  `;
+
+  const CREATE_USER = `
+    mutation user($email: String, $phoneNumber: String, $password: String!) {
+      user(email: $email, phoneNumber: $phoneNumber, password: $password) {
+        id
+        email
+        phoneNumber
+      }
+    }
+  `;
+
+  const userLogin = {
+    email: 'test@dharma.io',
+    password: '12345',
+  };
+
+  before(async () => {
     const context = ({req}) => ({
-      req,
+      session: {
+        userId: 1,
+      },
     });
 
     const apolloServer = new ApolloServer({schema, context});
-
     const testClient = createTestClient({
       apolloServer,
     });
@@ -59,78 +83,154 @@ describe('JobProcessor', () => {
     query = testClient.query;
     mutate = testClient.mutate;
 
+    await mutate(CREATE_USER, {
+      variables: userLogin,
+    });
+  });
+
+  beforeEach(async () => {
     client = new redis(process.env.REDIS_URL);
-    return client.flushdb();
+    await client.flushdb();
+
+    return truncate();
   });
 
   describe('#queries', () => {
-    describe('#job', () => {
-      it('returns a job', async () => {
-        const createdJob = await mutate(CREATE_JOB, {
-          variables: {url: 'http://numbersapi.com/44'},
+    describe('#users', () => {
+      it('return logged in user', async () => {
+        await mutate(CREATE_USER, {
+          variables: userLogin,
         });
 
-        const foundJob = await query(JOB, {
-          variables: {id: createdJob.data.job.id},
+        const results = await query(USER, {
+          variables: {},
         });
 
-        expect(createdJob.data).to.eql(foundJob.data);
+        const {
+          data: {
+            user,
+          },
+        } = results;
+
+        expect(user).to.exist;
+        expect(user.email).to.eql(userLogin.email);
       });
     });
 
-    describe('#jobs', () => {
-      it('returns all jobs', async () => {
-        await mutate(CREATE_JOB, {
-          variables: {url: 'http://numbersapi.com/44'},
+    describe('#users', () => {
+      it('returns all users', async () => {
+        await mutate(CREATE_USER, {
+          variables: userLogin,
         });
 
-        const foundJobs = await query(JOBS);
+        const results = await query(USERS, {
+          variables: {},
+        });
 
-        expect(foundJobs.data.jobs.length).eql(1);
+        const {
+          data: {
+            users,
+          },
+        } = results;
+
+        expect(users).to.have.length(1);
+      });
+    });
+
+    describe('#login', () => {
+      it('throws an error if password is wrong', async () => {
+        await mutate(CREATE_USER, {
+          variables: userLogin,
+        });
+
+        const results = await query(LOGIN, {
+          variables: {
+            email: 'test@dharma.io',
+            password: 'wrong',
+          },
+        });
+
+        expect(results.errors).to.exist;
+        expect(results.errors[0].message).to.eql('Incorrect Password');
+
+        expect(results.data.login).to.be.null;
+      });
+
+      it('return user if password is successful', async () => {
+        await mutate(CREATE_USER, {
+          variables: userLogin,
+        });
+
+        const results = await query(LOGIN, {
+          variables: userLogin,
+        });
+
+        const {
+          data: {
+            login,
+          },
+        } = results;
+
+        expect(login.email).to.eql(userLogin.email);
+      });
+    });
+
+    describe('#search', () => {
+      it('return a user if a field matches', async () => {
+        await mutate(CREATE_USER, {
+          variables: userLogin,
+        });
+
+        const results = await query(SEARCH, {
+          variables: {
+            email: "test"
+          },
+        });
+
+        const {
+          data: {
+            search,
+          },
+        } = results;
+
+        expect(search).to.have.length(1);
+        expect(search[0].email).to.eql(userLogin.email);
       });
     });
   });
 
-  describe('#mutations', () => {
-    describe('#job', () => {
-      it('throws an error if invalid url', async () => {
-        const createdJob = await mutate(CREATE_JOB, {
-          variables: {url: 'broken'},
+  describe('#mutation', () => {
+    describe('#user', () => {
+      it('creates a new user', async () => {
+        const results = await mutate(CREATE_USER, {
+          variables: userLogin,
         });
 
-        expect(createdJob.errors).to.exist;
+        const {
+          data: {
+            user,
+          },
+        } = results;
+
+        expect(user.email).to.eql(userLogin.email);
       });
 
-      it('creates a job', async () => {
-        const createdJob = await mutate(CREATE_JOB, {
-          variables: {url: 'http://numbersapi.com/44'},
+      it('creates a new user using a phone number', async () => {
+        const results = await mutate(CREATE_USER, {
+          variables: {
+            phoneNumber: '1111',
+            password: '12345',
+          },
         });
 
-        expect(createdJob).to.not.eql(null);
-      });
+        const {
+          data: {
+            user,
+          },
+        } = results;
 
-      it('returns same job if same url in 60m', async () => {
-        const createdJob1 = await mutate(CREATE_JOB, {
-          variables: {url: 'http://numbersapi.com/44'},
-        });
-
-        const createdJob2 = await mutate(CREATE_JOB, {
-          variables: {url: 'http://numbersapi.com/44'},
-        });
-
-        expect(createdJob1).to.eql(createdJob2);
-      });
-
-      it('creates a new job if not duplicate url', async () => {
-        const createdJob1 = await mutate(CREATE_JOB, {
-          variables: {url: 'http://numbersapi.com/44'},
-        });
-
-        const createdJob2 = await mutate(CREATE_JOB, {
-          variables: {url: 'http://numbersapi.com/45'},
-        });
-
-        expect(createdJob1).to.not.eql(createdJob2);
+        expect(user.email).to.be.null;
+        expect(user.phoneNumber).to.eql('1111');
       });
     });
   });

@@ -10,10 +10,12 @@ services:
 
   db:
     image: postgres
+    volumes:
+      - ./pg-init-scripts:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=db
+      - POSTGRES_MULTIPLE_DATABASES=db,db_test
 
   app:
     build: ./
@@ -27,6 +29,7 @@ services:
     environment:
       - REDIS_URL=redis://user-cache
       - DATABASE_URL=postgres://postgres:password@db:5432/db
+      - TEST_DATABASE_URL=postgres://postgres:password@db:5432/db_test
       - NODE_ENV=development
       - PORT=3000
       - SECRET=fakesecret

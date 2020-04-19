@@ -1,4 +1,5 @@
-const Follows = require('../../services/follows');
+const Follows = require('./service');
+const Messages = require('../messages/service');
 
 const createFollow = async (
   parentValue,
@@ -9,6 +10,14 @@ const createFollow = async (
 
   if (!loggedInUserId) {
     throw new Error('Must be logged in to get messages');
+  }
+
+  if (!userId) {
+    throw new Error('Must pass a userId to follow');
+  }
+
+  if (loggedInUserId === userId) {
+    throw new Error('You cant follow yourself');
   }
 
   const userFollows = new Follows(loggedInUserId);
@@ -31,7 +40,7 @@ const getFollows = async (
 
   const allFollows = await userFollows.getFollows();
 
-  return allFollows.map((follow) => follow.user);
+  return allFollows.map((follow) => follow.follow);
 };
 
 const removeFollow = async (
@@ -65,7 +74,7 @@ const getFollowedMessages = async (
 
   const followedUsers = await userFollows.getFollows();
 
-  const followedUserIds = followedUsers.map((follow) => follow.userId);
+  const followedUserIds = followedUsers.map((follow) => follow.followId);
 
   const messages = new Messages(loggedInUserId);
 
