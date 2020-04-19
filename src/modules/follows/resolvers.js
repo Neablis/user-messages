@@ -1,5 +1,5 @@
-const Follows = require('./service');
-const Messages = require('../messages/service');
+const Follows = require('../../services/follows');
+const Messages = require('../../services/messages');
 
 const createFollow = async (
   parentValue,

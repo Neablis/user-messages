@@ -1,5 +1,6 @@
 const models = require('../../utils/models');
 const bcrypt = require('bcrypt');
+const {Op} = require('sequelize');
 
 /**
  * Class for User Messages
@@ -44,7 +45,9 @@ class Users {
 
     const existingUser = await models.User.findOne({
       where: {
-        email: lowerCaseEmail,
+        email: {
+          [Op.eq]: lowerCaseEmail,
+        },
         phoneNumber,
       },
     });

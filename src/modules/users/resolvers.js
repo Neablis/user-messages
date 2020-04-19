@@ -1,5 +1,5 @@
 // Packages
-const Users = require('./service');
+const Users = require('../../services/users');
 
 // Modules
 // const redis = require('../../utils/redis');

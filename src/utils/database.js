@@ -1,5 +1,5 @@
 // Imports
-const {Sequelize} = require('sequelize');
+const {Sequelize, Op} = require('sequelize');
 
 // Create new database connection
 let connection;
@@ -9,7 +9,6 @@ if (process.env.NODE_ENV === 'test') {
     process.env.TEST_DATABASE_URL,
     {
       logging: false,
-      operatorsAliases: Sequelize.Op,
       pool: {
         max: 20,
         min: 0,
@@ -24,7 +23,6 @@ if (process.env.NODE_ENV === 'test') {
     process.env.DATABASE_URL,
     {
       logging: false,
-      operatorsAliases: Sequelize.Op,
       pool: {
         max: 20,
         min: 0,

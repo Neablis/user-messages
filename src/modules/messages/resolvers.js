@@ -1,5 +1,5 @@
 // Modules
-const Messages = require('./service');
+const Messages = require('../../services/messages');
 
 const getMessages = async (
   parentValue,

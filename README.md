@@ -32,6 +32,19 @@ $ docker-compose run --rm app npm run-script migrate
 - Caching
 
 ## Structure
+### Example
+* Src/
+  * Modules/
+    * Users/
+      * Model.js
+      * Mutations.js
+      * Queries.js
+      * Resolvers]
+  * Services/
+    * Users/
+      * index.js
+      * utilsForUsers.js
+
 ### Modules
 
 Contains endpoints, services, and models
@@ -46,10 +59,8 @@ Structured as
     * Contains all Graphql Queries
   * Resolvers
     * Contains all validations of inputs for Mutations and Queries
-  * Service
-    * Contains all business logic for the functionality
 
-When another feature uses functionality in a different feature, it will instantiation that features service. Rather than going through a Mutation or Resolver, this separates Graphql concerns from system concerns.
+This structure focuses on separating http/Graphql concerns from system concerns. Modules validate inputs, deal with auth, and format inputs.
 
 Pros:
   - Strict rule system limiting necessary planning when adding new Functionality
@@ -59,8 +70,16 @@ Pros:
 Cons:
   - Lots of boilerplate necessary to implement a few Feature
   - Potentially ugly or difficult to write code for features that don't have clear lines of delineation between functionality
-  - Sequelize makes it difficult to write efficient queries, this structure hides those performance hits
+  - Sequelize makes it difficult to write efficient queries, this structure + graphql can hide those performance hits because of nested resolvers
 
+### Services
+
+Contains business logic, this is where functionality is isolated, and composed between different services.
+
+Structured as
+* Service Name
+  * index.js - the root where logic will be exported from
+  * supporting.js - Where anything else that is needed for the service lives, these are private from other servicers.
 
 ## Usage
 ### Users
